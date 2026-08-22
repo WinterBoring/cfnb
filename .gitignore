@@ -1,4 +1,5 @@
 ﻿config.json
 git_sync.ps1
 git_sync.sh
+cfnb.log
 __pycache__/
