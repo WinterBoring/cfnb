@@ -1866,17 +1866,29 @@ def main():
     # ================= 新增：大满贯战报通知 =================
     # 智能拦截逻辑：只要 CF 或 GitHub 有任意一个明确返回了 False（彻底失败），就不再发送成功战报
     if cf_status is not False and git_status is not False:
-        summary_title = "✅ CF 节点优选与同步完成"
+        summary_title = "✅ CFNB 节点优选与同步完成"
         if final_selected:
             top_speed = speed_map.get(final_selected[0], 0)
             
+            # 【新增逻辑】直接从节点字符串中提取地区码并自动去重 (例如从 IP:443#HK 中提取 HK)
+            regions_list = []
+            for node in final_selected:
+                if '#' in node:
+                    # 分割提取 # 后面的纯粹字母
+                    reg = node.split('#')[-1].split()[0].upper()
+                    if reg not in regions_list:
+                        regions_list.append(reg)
+            regions_str = f"{'/'.join(regions_list)} " if regions_list else ""
+            
             # 用 type(cf_status) is int 确保拿到的绝对是真实数字（比如 3）
             cf_count = cf_status if type(cf_status) is int else len(ip_list)
+            
+            # 【战报拼接】大满贯排版：单星号加粗 + 反引号高亮 + 地区码
             content = (
-                f"👉 **保存节点**：{len(final_selected)} 个\n"
-                f"🚀 **最高速度**：{top_speed:.2f} Mbps\n"
-                f"🌐 **Cloudflare DNS**：{CF_DNS_RECORD_NAME} 指向 {cf_count} 个优选 IP\n"
-                f"📦 **GitHub 仓库**：ProxyIP 已成功同步更新"
+                f"👉 *已提取节点*：{regions_str}前 {len(final_selected)} 个\n"
+                f"🚀 *最高速度*：{top_speed:.2f} Mbps\n"
+                f"🌐 *Cloudflare*：`{CF_DNS_RECORD_NAME}` 负载 {cf_count} 个优选 IP\n"
+                f"📦 *GitHub*：`ProxyIP` 已成功同步更新"
             )
         else:
             content = "自动化任务执行完毕，但没有筛选出任何有效节点。"
